@@ -31,7 +31,6 @@ public class NASDAQ_Max_Trading
         
         
         FileInputFormat.setInputPaths(job, StringUtils.join(input, ","));
-        
         FileOutputFormat.setOutputPath(job, outputPath);
         
      
@@ -41,8 +40,19 @@ public class NASDAQ_Max_Trading
         
         
         job.setMapperClass(NASDAQ_Map.class);
+        
+        
+        
+        //set the partitioner to break up data chunks into year, combiner will run on the map node and simplify the input to reducer by computing
+        //the X highest quntity of money on any given day by year
+        
+        job.setPartitionerClass(NASDAQ_Day_Partitioner.class);
         job.setCombinerClass(NASDAQ_Reduce.class);
         job.setReducerClass(NASDAQ_Reduce.class);
+        
+        
+        //The number of reducetasks should ofcourse reflect the amount of years. From the sample data provided a rough estimate of this is around 24 years
+        job.setNumReduceTasks(24);
 			
 	}
 
@@ -55,6 +65,8 @@ public class NASDAQ_Max_Trading
     		System.exit(-1);
     	}
     	
+    	
+    	runJob(input, output);
     	
     
     
